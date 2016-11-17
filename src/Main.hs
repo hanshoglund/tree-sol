@@ -16,8 +16,7 @@ import BasePrelude hiding ((.))
 -- import Data.Tree Int
 
 main :: IO ()
-main = do
-  putStrLn "hello world 2"
+main = runTests
 
 data Tree a = Leaf a | Branch a [Tree a]
   deriving (Eq, Ord, Show)
@@ -25,43 +24,40 @@ data Tree a = Leaf a | Branch a [Tree a]
 
 -- node-node assocs, assoc to itself means root
 treeFromAssoc :: [Int] -> Tree Int
-treeFromAssoc xs = foo [root] root
+treeFromAssoc xs = treeFromNode assocs [root] root
   where
-    foo :: [Int] -> Int -> Tree Int
-    foo visited n = case childrenOf n visited of
-      (visited2, []) -> Leaf n
-      (visited2, xs) -> Branch n $ fmap (foo visited2) xs
-
-    -- with given element as root, return ALL child nodes, or [] if this is a leaf
-    -- based on assocs
-    -- returns (visitedNodes, children)
-    childrenOf :: Int -> [Int] -> ([Int], [Int])
-    childrenOf node visited  = (visited ++ children, children)
-      where
-        -- removeAll these from = filter (\x -> not $ x `elem` these) from
-
-        children :: [Int]
-        children = catMaybes $ fmap g assocs
-          where
-            g (x,y)
-              | (x == node && not (elem y visited)) = Just y
-              | (y == node && not (elem x visited)) = Just x
-              | otherwise = Nothing
-        -- assocsInvolvingNode :: Int -> [Maybe Int]
-        -- assocsInvolvingNode n =
-
-    root :: Int
-    root = fromMaybe (error "no root") $ fmap fst $ listToMaybe $ filter (\(x,y) -> x == y) assocs
     -- a list of edges
     -- NOTE each edge appear only once and may be in any dir
     assocs = zip [0..] xs
+    root :: Int
+    root = fromMaybe (error "no root") $ fmap fst $ listToMaybe $ filter (\(x,y) -> x == y) assocs
+
+treeFromNode :: [(Int,Int)] -> [Int] -> Int -> Tree Int
+treeFromNode assocs visited n = case childrenOf assocs n visited of
+  (visited2, []) -> Leaf n
+  (visited2, xs) -> Branch n $ fmap (treeFromNode assocs visited2) xs
+
+-- with given element as root, return ALL child nodes, or [] if this is a leaf
+-- based on assocs
+-- returns (visitedNodes, children)
+childrenOf :: [(Int, Int)] -> Int -> [Int] -> ([Int], [Int])
+childrenOf assocs node visited  = (visited ++ children, children)
+  where
+    children :: [Int]
+    children = catMaybes $ fmap g assocs
+      where
+        g (x,y)
+          | (x == node && not (elem y visited)) = Just y
+          | (y == node && not (elem x visited)) = Just x
+          | otherwise = Nothing
+
 
 
 
 -- Given a tree, return number of nodes at each depth/distance.
 -- in returned list, first element is one level below root node etc
 nodesAtDistance :: Tree Int -> [Int]
-nodesAtDistance (Leaf _) = error "can  not handle empty tree"
+nodesAtDistance (Leaf _) = []
 nodesAtDistance t@_      = tail $ nodesAtDistanceInclRoot t
   where
     -- in returned list, root node is level 0 (1st element)
@@ -88,13 +84,18 @@ EXAMPLE CASE I
 CUSTOM CASE I
 -}
 distFromCapital :: [Int] -> [Int]
-distFromCapital spec = nodesAtDistance (treeFromAssoc spec)
+distFromCapital spec = padWithZeroToLength (length spec - 1) $ nodesAtDistance (treeFromAssoc spec)
+  where
+padWithZeroToLength n xs = take n $ xs ++ repeat 0
 
 runTests = do
-  print $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 0, 1] ==   [1,3,2,3,0,0,0,0,0]
+  print $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 0, 1] ==  [1,3,2,3,0,0,0,0,0]
   -- print $ distFromCapital [0] ==   []
   print $ distFromCapital [0,0,0,2] ==   [2,1,0]
   print $ distFromCapital [1,1,1,0,1] ==   [3,1,0,0]
 
+  print $ not $ distFromCapital [1,1,1,0,1] ==   [3,1,0,0,5]
+  print $ not $ distFromCapital [1,1,1,0,1] == []
+  print $ not $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 5, 1] ==  [1,3,2,3,0,0,0,0,0]
 
 -- testNAD = nodesAtDistance $ Branch [Leaf 1, Branch [Leaf 3]]
