@@ -2,9 +2,8 @@
 "use strict"
 
 function solution(t) {
-  distFromCapital(t)
+  return distFromCapital(t)
 }
-
 
 var makeLeaf   = x      => ["Leaf", x]
 var makeBranch = (x,xs) => ["Branch", x, xs]
@@ -12,67 +11,33 @@ var zip        = (a, b) => a.map((e, i) => [e, b[i]])
 var makeAssocs = (a)    => a.map((e,i)  => [i, e])
 var catMaybes  = xs => Array.prototype.concat.apply([], xs)
 
-Array.prototype.contains = function(obj) {
-    var i = this.length;
+var contains = function(obj, arr) {
+    var i = arr.length;
     while (i--) {
-        if (this[i] == obj) {
+        if (arr[i] == obj) {
             return true;
         }
     }
     return false;
 }
-var transpose = function(a) {
-
-  // Calculate the width and height of the Array
-  var w = a.length ? a.length : 0,
-    h = a[0] instanceof Array ? a[0].length : 0;
-
-  // In case it is a zero matrix, no transpose routine needed.
-  if(h === 0 || w === 0) { return []; }
-
-  /**
-   * @var {Number} i Counter
-   * @var {Number} j Counter
-   * @var {Array} t Transposed data is stored in this array.
-   */
-  var i, j, t = [];
-
-  // Loop through every item in the outer array (height)
-  for(i=0; i<h; i++) {
-
-    // Insert a new row (array)
-    t[i] = [];
-
-    // Loop through every item per item in outer array (width)
-    for(j=0; j<w; j++) {
-
-      // Save transposed data.
-      t[i][j] = a[j][i];
-    }
-  }
-  return t;
-};
 
 var treeFromAssoc = function(xs) {
     let assocs = makeAssocs(xs)
     let root = null;
     assocs.forEach(function(xy) {
-      // console.log("xs", xs)
       var x = xy[0]
       var y = xy[1]
       if (x === y) {
         root = x;
       }
     })
-    // console.log(assocs, root)
     if (root === null) {
       throw("No root")
     }
     return treeFromNode(assocs, [root], root)
 }
 
-function treeFromNode(assocs, visited, n) {
-  // console.log("enter treeFromNode", assocs, visited, n)
+var treeFromNode = function (assocs, visited, n) {
   let res = childrenOf(assocs, n, visited)
   let visited2 = res[0]
   let xs       = res[1]
@@ -83,20 +48,18 @@ function treeFromNode(assocs, visited, n) {
   }
 }
 
-function childrenOf(assocs, node, visited) {
-  // console.log("enter childrenOf", assocs)
+var childrenOf = function (assocs, node, visited) {
   let children = catMaybes(assocs.map(function(xy) {
     var x = xy[0]
     var y = xy[1]
-    if ((x === node) && !(visited.contains(y))) {
+    if ((x === node) && !(contains(y, visited))) {
       return [y]
     }
-    if ((y === node) && !(visited.contains(x))) {
+    if ((y === node) && !(contains(x, visited))) {
       return [x]
     }
     return []
   }))
-  // console.log("    return childrenOf", children)
   return [visited.concat(children), children]
 }
 
@@ -110,7 +73,7 @@ var nodesAtDistance = function (t) {
   }
 }
 
-function nodesAtDistanceInclRoot(t) {
+var nodesAtDistanceInclRoot = function (t) {
   if (t[0] === "Leaf") {
     return [1]
   }
@@ -120,8 +83,7 @@ function nodesAtDistanceInclRoot(t) {
   }
 }
 
-function sumEachLevel(xxs) {
-  // return transpose(xs).map(ys => ys.reduce((x, y) => (x|0) + (y|0), 0))
+var sumEachLevel = function (xxs) {
   let maxLength = xxs.map(xs => xs.length).reduce((x,y) => Math.max(x,y), 0)
   var rs = []
   for (var i = 0; i < maxLength; ++i) {
@@ -135,37 +97,15 @@ function sumEachLevel(xxs) {
 }
 
 var distFromCapital = function(spec) {
-  return tx(padWithZeroToLength(spec.length - 1, nodesAtDistance(treeFromAssoc(spec))))
+  return padWithZeroToLength(spec.length - 1, nodesAtDistance(treeFromAssoc(spec)))
 }
 
-function padWithZeroToLength(n,xs) {
+var padWithZeroToLength = function(n,xs) {
   return xs.concat(new Array(n - xs.length).fill(0))
 }
 
 
-function tx(x) {
-  // console.log("Tr", x)
-  return x
-}
-
-// console.log("MUST BE", sumEachLevel([ [ 1 ], [ 1, 1 ] ]))
-// console.log(transpose([[1,2,1],[0]]))
-// console.log(sumEachLevel([[1,2,1],[10]]))
-// console.log(distFromCapital([9, 1, 4, 9, 0, 4, 8, 9, 0, 1]).map(x => typeof(x)) )
-// console.log(distFromCapital([9, 1, 4, 9, 0, 4, 8, 9, 0, 1]) )
-
-// module.exports = distFromCapital
-
-// console.log(
-//     JSON.stringify(distFromCapital([9, 1, 4, 9, 0, 4, 8, 9, 0, 1]))
-//       )
-// console.log(
-//     JSON.stringify(distFromCapital([0,0,0,2]))
-//       )
-// console.log(
-//     JSON.stringify(distFromCapital([1,1,1,0,1]))
-//       )
-
+// Test
 
 console.log(
     JSON.stringify(distFromCapital([9, 1, 4, 9, 0, 4, 8, 9, 0, 1]))
