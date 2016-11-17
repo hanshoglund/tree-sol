@@ -9,5 +9,5 @@
 ## JS
 
 - Source: `main.js`
-- Dependencies: Node >= 7.0.0
+- Dependencies: Node >= 7.1.0
 - Run: `node main.js`

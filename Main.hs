@@ -63,7 +63,8 @@ sumEachLevel = fmap sum . transpose
 
 distFromCapital :: [Int] -> [Int]
 distFromCapital spec = tx $ padWithZeroToLength (length spec - 1) $ nodesAtDistance (treeFromAssoc spec)
-  where
+
+padWithZeroToLength :: Int -> [Int] -> [Int]
 padWithZeroToLength n xs = take n $ xs ++ repeat 0
 
 -- Debug
@@ -72,11 +73,11 @@ tx x = x
 
 
 runTests = do
-  -- print $ distFromCapital [0] ==   []
   print $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 0, 1] ==  [1,3,2,3,0,0,0,0,0]
   print $ distFromCapital [0,0,0,2] ==   [2,1,0]
   print $ distFromCapital [1,1,1,0,1] ==   [3,1,0,0]
   print $ distFromCapital [1,5,1,4,5,5,0] ==   [2,3,1,0,0,0]
+  print $ distFromCapital [0] ==   []
 
   -- print $ not $ distFromCapital [1,1,1,0,1] ==   [3,1,0,0,5]
   -- print $ not $ distFromCapital [1,1,1,0,1] == []

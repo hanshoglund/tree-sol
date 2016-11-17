@@ -1,17 +1,15 @@
 /* jshint strict:false, asi: true, esversion: 6, loopfunc:true */
+/* globals console */
 
-"use strict"
-function solution(t) {
+const solution = function(t) {
   return distFromCapital(t)
 }
 
-var makeLeaf   = x      => ["Leaf", x]
-var makeBranch = (x,xs) => ["Branch", x, xs]
-var makeAssocs = (a)    => a.map((e,i)  => [i, e])
-var catMaybes  = xs     => Array.prototype.concat.apply([], xs)
+const makeAssocs = a  => a.map((e,i)  => [i, e])
+const catMaybes  = xs => Array.prototype.concat.apply([], xs)
 
-var contains = function(obj, arr) {
-    var i = arr.length;
+const contains = function(obj, arr) {
+    let i = arr.length;
     while (i--) {
         if (arr[i] == obj) {
             return true;
@@ -20,12 +18,10 @@ var contains = function(obj, arr) {
     return false;
 }
 
-var treeFromAssoc = function(xs) {
-    let assocs = makeAssocs(xs)
+const treeFromAssoc = function(xs) {
+    const assocs = makeAssocs(xs)
     let root = null;
-    assocs.forEach(function(xy) {
-      var x = xy[0]
-      var y = xy[1]
+    assocs.forEach(function([x, y]) {
       if (x === y) {
         root = x;
       }
@@ -36,21 +32,17 @@ var treeFromAssoc = function(xs) {
     return treeFromNode(assocs, [root], root)
 }
 
-var treeFromNode = function (assocs, visited, n) {
-  let res = childrenOf(assocs, n, visited)
-  let visited2 = res[0]
-  let xs       = res[1]
+const treeFromNode = function (assocs, visited, n) {
+  const [visited2, xs] = childrenOf(assocs, n, visited)
   if (xs.length === 0) {
-    return makeLeaf(n)
+    return {type: "leaf"}
   } else {
-    return makeBranch(n, xs.map(ys => treeFromNode(assocs, visited2, ys)))
+    return {type: "branch", children :xs.map(ys => treeFromNode(assocs, visited2, ys)) }
   }
 }
 
-var childrenOf = function (assocs, node, visited) {
-  let children = catMaybes(assocs.map(function(xy) {
-    var x = xy[0]
-    var y = xy[1]
+const childrenOf = function (assocs, node, visited) {
+  const children = catMaybes(assocs.map(function([x, y]) {
     if ((x === node) && !(contains(y, visited))) {
       return [y]
     }
@@ -62,31 +54,30 @@ var childrenOf = function (assocs, node, visited) {
   return [visited.concat(children), children]
 }
 
-
-var nodesAtDistance = function (t) {
-  if (t[0] === "Leaf") {
+const nodesAtDistance = function (t) {
+  if (t.type === "leaf") {
     return []
   }
-  if (t[0] === "Branch") {
+  if (t.type === "branch") {
     return nodesAtDistanceInclRoot(t).slice(1)
   }
+
 }
 
-var nodesAtDistanceInclRoot = function (t) {
-  if (t[0] === "Leaf") {
+const nodesAtDistanceInclRoot = function (t) {
+  if (t.type === "leaf") {
     return [1]
   }
-  if (t[0] === "Branch") {
-    let xs = t[2]
-    return [1].concat(sumEachLevel(xs.map(nodesAtDistanceInclRoot)))
+  if (t.type === "branch") {
+    return [1].concat(sumEachLevel(t.children.map(nodesAtDistanceInclRoot)))
   }
 }
 
-var sumEachLevel = function (xxs) {
-  let maxLength = xxs.map(xs => xs.length).reduce((x,y) => Math.max(x,y), 0)
-  var rs = []
-  for (var i = 0; i < maxLength; ++i) {
-    var r = 0
+const sumEachLevel = function (xxs) {
+  const maxLength = xxs.map(xs => xs.length).reduce((x,y) => Math.max(x,y), 0)
+  let rs = []
+  for (let i = 0; i < maxLength; ++i) {
+    let r = 0
     xxs.forEach(function(xs) {
       r += (xs[i]|0)
     })
@@ -95,11 +86,11 @@ var sumEachLevel = function (xxs) {
   return rs
 }
 
-var padWithZeroToLength = function(n,xs) {
+const padWithZeroToLength = function(n,xs) {
   return xs.concat(new Array(n - xs.length).fill(0))
 }
 
-var distFromCapital = function(spec) {
+const distFromCapital = function(spec) {
   return padWithZeroToLength(spec.length - 1, nodesAtDistance(treeFromAssoc(spec)))
 }
 
@@ -121,4 +112,8 @@ console.log(
 console.log(
     JSON.stringify(distFromCapital([1,5,1,4,5,5,0])) ===
       JSON.stringify([2,3,1,0,0,0])
+      )
+console.log(
+    JSON.stringify(distFromCapital([0])) ===
+  		JSON.stringify([])
       )
