@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables#-}
+{-# LANGUAGE ScopedTypeVariables, NoMonomorphismRestriction #-}
 
 {-# OPTIONS_GHC
   -fwarn-incomplete-patterns
@@ -13,14 +13,12 @@
 module Main where
 import BasePrelude hiding ((.))
 
--- import Data.Tree Int
 
 main :: IO ()
 main = runTests
 
 data Tree a = Leaf a | Branch a [Tree a]
   deriving (Eq, Ord, Show)
-
 
 -- node-node assocs, assoc to itself means root
 treeFromAssoc :: [Int] -> Tree Int
@@ -38,8 +36,6 @@ treeFromNode assocs visited n = case childrenOf assocs n visited of
   (visited2, xs) -> Branch n $ fmap (treeFromNode assocs visited2) xs
 
 -- with given element as root, return ALL child nodes, or [] if this is a leaf
--- based on assocs
--- returns (visitedNodes, children)
 childrenOf :: [(Int, Int)] -> Int -> [Int] -> ([Int], [Int])
 childrenOf assocs node visited  = (visited ++ children, children)
   where
@@ -50,9 +46,6 @@ childrenOf assocs node visited  = (visited ++ children, children)
           | (x == node && not (elem y visited)) = Just y
           | (y == node && not (elem x visited)) = Just x
           | otherwise = Nothing
-
-
-
 
 -- Given a tree, return number of nodes at each depth/distance.
 -- in returned list, first element is one level below root node etc
@@ -68,34 +61,24 @@ nodesAtDistance t@_      = tail $ nodesAtDistanceInclRoot t
 sumEachLevel :: [[Int]] -> [Int]
 sumEachLevel = fmap sum . transpose
 
-{-
-argument is an assoc list (indices 1st pair element), each assoc is an edge between nodes
-an edge to itself (identity) indicates root node ("capital")
-
-----
-return a Map (Distance ~ Int) to (Count ~ Int), count is number of cities at this distance
-return map up to (argument.length - 1), i.e. given 10 arguments, return an array of 9 elements
-  i.e. never count elements at distance 0
-
-----
-EXAMPLE CASE I
-  [9, 1, 4, 9, 0, 4, 8, 9, 0, 1]
-  [1,3,2,3,0,0,0,0,0]
-CUSTOM CASE I
--}
 distFromCapital :: [Int] -> [Int]
-distFromCapital spec = padWithZeroToLength (length spec - 1) $ nodesAtDistance (treeFromAssoc spec)
+distFromCapital spec = tx $ padWithZeroToLength (length spec - 1) $ nodesAtDistance (treeFromAssoc spec)
   where
 padWithZeroToLength n xs = take n $ xs ++ repeat 0
+
+
+tx = (\x -> trace ("Tr "<> show x) x)
+
 
 runTests = do
   print $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 0, 1] ==  [1,3,2,3,0,0,0,0,0]
   -- print $ distFromCapital [0] ==   []
   print $ distFromCapital [0,0,0,2] ==   [2,1,0]
   print $ distFromCapital [1,1,1,0,1] ==   [3,1,0,0]
+  print $ distFromCapital [1,5,1,4,5,5,0] ==   [2,3,1,0,0,0]
 
-  print $ not $ distFromCapital [1,1,1,0,1] ==   [3,1,0,0,5]
-  print $ not $ distFromCapital [1,1,1,0,1] == []
-  print $ not $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 5, 1] ==  [1,3,2,3,0,0,0,0,0]
+  -- print $ not $ distFromCapital [1,1,1,0,1] ==   [3,1,0,0,5]
+  -- print $ not $ distFromCapital [1,1,1,0,1] == []
+  -- print $ not $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 5, 1] ==  [1,3,2,3,0,0,0,0,0]
 
 -- testNAD = nodesAtDistance $ Branch [Leaf 1, Branch [Leaf 3]]
