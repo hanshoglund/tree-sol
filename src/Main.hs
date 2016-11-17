@@ -66,13 +66,14 @@ distFromCapital spec = tx $ padWithZeroToLength (length spec - 1) $ nodesAtDista
   where
 padWithZeroToLength n xs = take n $ xs ++ repeat 0
 
-
-tx = (\x -> trace ("Tr "<> show x) x)
+-- Debug
+tx x = x
+-- tx = (\x -> trace ("Tr "<> show x) x)
 
 
 runTests = do
-  print $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 0, 1] ==  [1,3,2,3,0,0,0,0,0]
   -- print $ distFromCapital [0] ==   []
+  print $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 0, 1] ==  [1,3,2,3,0,0,0,0,0]
   print $ distFromCapital [0,0,0,2] ==   [2,1,0]
   print $ distFromCapital [1,1,1,0,1] ==   [3,1,0,0]
   print $ distFromCapital [1,5,1,4,5,5,0] ==   [2,3,1,0,0,0]
@@ -80,5 +81,3 @@ runTests = do
   -- print $ not $ distFromCapital [1,1,1,0,1] ==   [3,1,0,0,5]
   -- print $ not $ distFromCapital [1,1,1,0,1] == []
   -- print $ not $ distFromCapital [9, 1, 4, 9, 0, 4, 8, 9, 5, 1] ==  [1,3,2,3,0,0,0,0,0]
-
--- testNAD = nodesAtDistance $ Branch [Leaf 1, Branch [Leaf 3]]

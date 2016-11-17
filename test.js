@@ -8,7 +8,7 @@ function solution(t) {
 var makeLeaf   = x      => ["Leaf", x]
 var makeBranch = (x,xs) => ["Branch", x, xs]
 var makeAssocs = (a)    => a.map((e,i)  => [i, e])
-var catMaybes  = xs => Array.prototype.concat.apply([], xs)
+var catMaybes  = xs     => Array.prototype.concat.apply([], xs)
 
 var contains = function(obj, arr) {
     var i = arr.length;
