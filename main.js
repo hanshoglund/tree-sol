@@ -9,23 +9,12 @@ const makeAssocs = a  => a.map((e,i)  => [i, e])
 const catMaybes  = xs => Array.prototype.concat.apply([], xs)
 
 const contains = function(obj, arr) {
-    let i = arr.length;
-    while (i--) {
-        if (arr[i] == obj) {
-            return true;
-        }
-    }
-    return false;
+  return arr.reduce((r, x) => (x === obj) || r, false)
 }
 
 const treeFromAssoc = function(xs) {
     const assocs = makeAssocs(xs)
-    let root = null;
-    assocs.forEach(function([x, y]) {
-      if (x === y) {
-        root = x;
-      }
-    })
+    let root = assocs.reduce((r, [x, y]) => x === y ? x : r, null)
     if (root === null) {
       throw("No root")
     }
